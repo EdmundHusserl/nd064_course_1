@@ -101,9 +101,10 @@ def create():
             connection = get_db_connection()
             connection.execute('INSERT INTO posts (title, content) VALUES (?, ?)',
                          (title, content))
+            app.db_connection_count += 1
             connection.commit()
             connection.close()
-            app.db_connection_count += 1
+            app.post_count += 1
             app.logger.info(f"A new article is created: {title}")
             return redirect(url_for('index'))
 
