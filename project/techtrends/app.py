@@ -120,7 +120,7 @@ def metrics() -> dict:
     app.db_connection_count += 1
     return jsonify({
         "db_connection_count": app.db_connection_count,
-        "post_count": get_post_count()
+        "post_count": app.post_count
     }), 200
 
 
