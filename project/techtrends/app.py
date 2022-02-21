@@ -29,7 +29,7 @@ def get_post_count(logger: logging.Logger) -> int:
             connection.execute(
                 "SELECT * FROM posts"
             ).fetchall()
-        )
+        ), 200
     except Exception as e:
         logger.warning(e.args)
     finally:
@@ -121,7 +121,7 @@ def metrics() -> dict:
     return jsonify({
         "db_connection_count": app.db_connection_count,
         "post_count": get_post_count()
-    })
+    }), 200
 
 
 # start the application on port 3111
