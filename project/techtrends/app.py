@@ -29,7 +29,7 @@ def get_post_count(logger: logging.Logger) -> int:
             connection.execute(
                 "SELECT * FROM posts"
             ).fetchall()
-        ), 200
+        )
     except Exception as e:
         logger.warning(e.args)
     finally:
