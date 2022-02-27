@@ -32,21 +32,22 @@ class AppLogger:
 
         return logger
 
-    def increment_db_connection_count(self, func):
-        @wraps(func)
-        def wrapped_func(*args, **kwargs):
-            res = func(*args, **kwargs)
-            self.db_connection_count += 1
-            return res
-        return wrapped_func
-
-    def increment_post_count(self, func):
-        @wraps(func)
-        def wrapped_func(*args, **kwargs):
-            res = func(*args, **kwargs)
-            self.post_count += 1
-            return res
-        return wrapped_func
+    def increment(self, what: str):
+        def increment_attribute(func):
+            @wraps(func)
+            def wrapped_func(*args, **kwargs):
+                res = func(*args, **kwargs)
+                try:
+                    self.__setattr__(
+                        what,
+                        int(getattr(self, what)) + 1
+                    )
+                except AttributeError as e:
+                    self.logger.warning(f"{e.args}")
+                    pass
+                return res
+            return wrapped_func
+        return increment_attribute
 
     def set_post_count(self, count: int):
         self.post_count = count
