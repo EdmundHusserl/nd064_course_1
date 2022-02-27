@@ -15,7 +15,7 @@ from middleware import AppLogger
 
 
 # Declare a AppLoger instance and the Flask application
-log = AppLogger(name="app", level=10)
+logger = AppLogger(name="app", level=10)
 
 
 # Function to get a database connection.
@@ -26,15 +26,14 @@ def get_db_connection():
     return connection
 
 
-@log.increment("db_connection_count")
-@log.increment("post_count")
-def create_post(title: str, content: str, logger: logging.Logger):
+@logger.increment("db_connection_count")
+@logger.increment("post_count")
+def create_post(title: str, content: str):
     connection = get_db_connection()
     connection.execute('INSERT INTO posts (title, content) VALUES (?, ?)',
                        (title, content))
     connection.commit()
     connection.close()
-    logger.info(f"A new article is created: {title}")
 
 
 # Function to get a post using its ID
@@ -57,13 +56,13 @@ def get_post_count() -> int:
     return len(post_count)
 
 
-log.set_post_count(count=get_post_count())
+logger.set_post_count(count=get_post_count())
 
 
 def create_flask_instance() -> Flask:
     app = Flask(__name__)
     app.config["SECRET_KEY"] = uuid.uuid4().hex
-    app.logger = log.logger
+    app.logger = logger.logger
     return app
 
 
@@ -72,7 +71,7 @@ app = create_flask_instance()
 
 # Define the main route of the web application
 @app.route("/")
-@log.increment("db_connection_count")
+@logger.increment("db_connection_count")
 def index():
     connection = get_db_connection()
     posts = connection.execute('SELECT * FROM posts').fetchall()
@@ -84,7 +83,7 @@ def index():
 
 
 @app.route("/<int:post_id>")
-@log.increment("db_connection_count")
+@logger.increment("db_connection_count")
 def post(post_id):
     post = get_post(post_id)
 
@@ -111,9 +110,11 @@ def create():
         content = request.form['content']
 
         if not title:
-            flash('Title is required!')
+            flash('Title is required!', category="error")
+
         else:
-            create_post(title, content, app.logger)
+            create_post(title, content)
+            app.logger.info(f"A new article is created: {title}")
             return redirect(url_for('index'))
 
     return render_template('create.html')
@@ -127,8 +128,8 @@ def health_probe() -> dict:
 @app.route("/metrics")
 def metrics() -> dict:
     return jsonify({
-        "db_connection_count": log.db_connection_count,
-        "post_count": log.post_count
+        "db_connection_count": logger.db_connection_count,
+        "post_count": logger.post_count
     }), 200
 
 
