@@ -11,10 +11,19 @@
 
     <div class="form">
         <label class="label" for="content">Content</label>
-	<textarea name="content" placeholder="Post content">{{ request.form['content'] }}</textarea>
+	    <textarea name="content" placeholder="Post content">{{ request.form['content'] }}</textarea>
     </div>
     <div class="form">
         <button type="submit" class="button">Submit</button>
     </div>
 </form>
+{% with errors = get_flashed_messages(category_filter=["error"]) %}
+{% if errors %}
+<div class="alert-message block-message error">
+    {%- for msg in errors %}
+    <p>{{ msg }}</p>
+    {% endfor -%}
+</div>
+{% endif %}
+{% endwith %}
 {% endblock %}
