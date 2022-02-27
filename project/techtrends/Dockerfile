@@ -1,4 +1,4 @@
-FROM    --platform=arm64 python:3.8-slim-buster
+FROM    python:3.8-slim-buster
 EXPOSE  3111
 WORKDIR /app
 ADD     . .
