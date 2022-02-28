@@ -25,23 +25,24 @@ class AppLogger:
         ch.setLevel(level)
 
         formatter = logging.Formatter(
-            "%(levelname)s %(name)s %(asctime)s %(message)s"
+            "%(name)s %(levelname)s %(asctime)s %(message)s"
         )
         ch.setFormatter(formatter)
         logger.addHandler(ch)
 
         return logger
 
-    def increment(self, what: str):
+    def increment(self, *fields):
         def increment_attribute(func):
             @wraps(func)
             def wrapped_func(*args, **kwargs):
                 res = func(*args, **kwargs)
                 try:
-                    self.__setattr__(
-                        what,
-                        int(getattr(self, what)) + 1
-                    )
+                    for field in fields:
+                        self.__setattr__(
+                            str(field),
+                            int(getattr(self, field)) + 1
+                        )
                 except AttributeError as e:
                     self.logger.warning(f"{e.args}")
                     pass

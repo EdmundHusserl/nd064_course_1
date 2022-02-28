@@ -14,19 +14,16 @@ from werkzeug.exceptions import abort
 from middleware import AppLogger
 
 
-# Declare a AppLoger instance and the Flask application
 logger = AppLogger(name="app", level=10)
 
 
-# Function to get a database connection.
-# This function connects to database with the name `database.db`
+@logger.increment("db_connection_count")
 def get_db_connection():
     connection = sqlite3.connect('database.db')
     connection.row_factory = sqlite3.Row
     return connection
 
 
-@logger.increment("db_connection_count")
 @logger.increment("post_count")
 def create_post(title: str, content: str):
     connection = get_db_connection()
@@ -69,21 +66,15 @@ def create_flask_instance() -> Flask:
 app = create_flask_instance()
 
 
-# Define the main route of the web application
 @app.route("/")
-@logger.increment("db_connection_count")
 def index():
     connection = get_db_connection()
     posts = connection.execute('SELECT * FROM posts').fetchall()
     connection.close()
     return render_template('index.html', posts=posts)
 
-# Define how each individual article is rendered
-# If the post ID is not found a 404 page is shown
-
 
 @app.route("/<int:post_id>")
-@logger.increment("db_connection_count")
 def post(post_id):
     post = get_post(post_id)
 
@@ -95,14 +86,12 @@ def post(post_id):
         return render_template('post.html', post=post)
 
 
-# Define the About Us page
 @app.route("/about")
 def about():
     app.logger.info("The \"About Us\" page has been retrieved")
     return render_template('about.html')
 
 
-# Define the post creation functionality
 @app.route("/create", methods=("GET", "POST"))
 def create():
     if request.method == 'POST':
@@ -133,6 +122,5 @@ def metrics() -> dict:
     }), 200
 
 
-# start the application on port 3111
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port='3111', debug=True)
